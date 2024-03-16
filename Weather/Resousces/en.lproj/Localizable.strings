@@ -1,0 +1,27 @@
+/* 
+  Localizable.strings
+  Weather
+
+  Created by Дрозд Денис on 29.02.2024.
+  
+*/
+
+"Clear " = "Ясная погода";
+"Cloudy " = "Облачная погода";
+"Light drizzle" = "Легкая морось";
+"Light freezing rain" = "Легкий ледяной дождь";
+"Light rain" = "Легкий дождь";
+"Light rain shower" = "Легкая морось";
+"Light sleet" = "Легкий мокрый снег";
+"Light snow showers" = "Легкий снегопад";
+"Moderate rain" = "Умеренный дождь";
+"Moderate snow" = "Умеренный снег";
+"Overcast " = "Пасмурная погода";
+"Partly Cloudy " = "Переменная облачность";
+"Partly cloudy" = "Переменная облачность";
+"Patchy rain nearby" = "Ожидается дождь";
+"Sunny" = "Cолнечная погода";
+"Mist" = "Туман";
+"Light snow" = "Легкий снег";
+"Moderate or heavy snow showers" = "Умеренный снегопад";
+"Freezing fog" = "Леляной туман";
