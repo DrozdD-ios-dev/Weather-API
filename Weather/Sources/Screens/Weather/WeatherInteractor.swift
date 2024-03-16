@@ -35,6 +35,7 @@ final class WeatherInteractor: WeatherInteractorProtocol {
         }
     }
 
+    //new API
     func fetchData(parameter: String, completion: @escaping (Result<Weather, NetworkError>) -> Void) {
         guard let url = URL(string: "https://api.weatherapi.com/v1/forecast.json?key=2b2a831937964f21bf464404241603&q=\(parameter)&days=7&aqi=no&alerts=no") else { return }
         
@@ -69,6 +70,7 @@ final class WeatherInteractor: WeatherInteractorProtocol {
         task.resume()
     }
     
+    //new API
     func searchCity(with: String) {
         guard let url = URL(string: "https://api.weatherapi.com/v1/search.json?key=2b2a831937964f21bf464404241603&q=\(with)") else { return }
         
