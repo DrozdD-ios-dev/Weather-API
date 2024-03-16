@@ -60,7 +60,7 @@ final class WeatherInteractor: WeatherInteractorProtocol {
             do {
                 let weather = try JSONDecoder().decode(Weather.self, from: data)
                 completion(.success(weather))
-//                print(weather)
+//                 print(weather)
             } catch {
                 print("Ошибка декодирования: \(error)")
             }
