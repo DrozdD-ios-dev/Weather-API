@@ -1,5 +1,5 @@
 
-Приложение  - "Погода".
+Приложение  - "Прогноз погоды".
 -
 При первом запуске приложения, приходит запрос на разрешение использования геолокации.
 На основании геолокации пользователя отправляется запрос на получение прогноза погоды.
@@ -13,7 +13,7 @@ UIKit, NukeExtensions, SnapKit, CoreLocation.
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Application - "Weather".
+Application - "Forecast weather".
 -
 When you first launch the application, you will be prompted to allow the use of geolocation.
 Based on geolocation, the user sends a request to receive a weather forecast.
