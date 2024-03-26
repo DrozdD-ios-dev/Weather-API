@@ -1,5 +1,5 @@
 //
-//  WeatherVC.swift
+//  MainScreenViewContriller.swift
 //  Weather
 //
 //  Created by Дрозд Денис on 25.02.2024.
@@ -9,27 +9,31 @@ import UIKit
 import CoreLocation
 
 // MARK: - Protocol
-protocol WeatherViewProtocol: AnyObject {
+
+protocol MainScreenViewProtocol: AnyObject {
     func setWeatherDescriptionView(with model: WeatherDescription)
     func reloadCollectionViewData()
     func reloadTableViewData()
     func reloadViewMain(with: UIImage)
-    func sentCitys(with: [String])
+    func sendListOfFoundCities(with: [String])
+    func newError(text: String)
 }
 
-final class WeatherVC: UIViewController {
+final class MainScreenViewContriller: UIViewController {
     
-    var arrayCitys = [String]() {
+    // MARK: - Private properties
+    private var arrayOneCity = [String]()
+    private var textForSearchBar = ""
+    
+    private var listOfFoundCities = [String]() {
         willSet(newValue) {
             getNewValue(text: newValue)
         }
     }
-    var arrayOneCity = [String]()
-    var locationManager: CLLocationManager = CLLocationManager()
-    var callCounter = 0
-    var textForSearchBar = ""
     
     // MARK: - Views
+    
+    private let weatherDescriptionView = WeatherDescriptionView()
     
     lazy var viewMain: UIImageView = {
         let imageView = UIImageView()
@@ -37,7 +41,7 @@ final class WeatherVC: UIViewController {
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.isUserInteractionEnabled = true
-        imageView.layer.cornerRadius = 40
+        imageView.layer.cornerRadius = view.frame.width * 0.1
         return imageView
     }()
     
@@ -45,11 +49,11 @@ final class WeatherVC: UIViewController {
         let imageView = UIImageView()
         imageView.backgroundColor = .systemBlue
         imageView.clipsToBounds = false
-        imageView.layer.shadowOffset = CGSize(width: 0, height: 5)
-        imageView.layer.shadowOpacity = 1
+        imageView.layer.shadowOffset = CGSize(width: .zero, height: EnumInt.five)
+        imageView.layer.shadowOpacity = Float(EnumInt.one)
         imageView.layer.shadowColor = UIColor.black.cgColor
-        imageView.layer.shadowRadius = 30
-        imageView.layer.cornerRadius = 40
+        imageView.layer.shadowRadius = EnumInt.thirty
+        imageView.layer.cornerRadius = EnumInt.fourty
         imageView.layer.borderColor = UIColor.white.cgColor
         imageView.layer.borderWidth = 0.3
         return imageView
@@ -58,7 +62,7 @@ final class WeatherVC: UIViewController {
     private lazy var searchBar: UISearchBar = {
         let searchBar = UISearchBar()
         searchBar.delegate = self
-        searchBar.placeholder = "Search"
+        searchBar.placeholder = EnumString.search.rawValue
         searchBar.searchBarStyle = .default
         searchBar.tintColor = .black
         searchBar.barTintColor = .black
@@ -68,30 +72,28 @@ final class WeatherVC: UIViewController {
         searchBar.showsSearchResultsButton = false
         return searchBar
     }()
-    
-    private let weatherDescriptionView = WeatherDescriptionView()
-    
+
     private let labelWeatherDays: UILabel = {
         let label = UILabel()
-        label.text = "Прогноз на 7 дней"
+        label.text = EnumString.forecast7Deys.rawValue
         label.textColor = .black
-        label.font = UIFont(name: "AppleSDGothicNeo-SemiBold", size: 26)
+        label.font = UIFont(name: EnumString.fontOne.rawValue, size: EnumInt.twentySix)
         return label
     }()
     
     private let labelNight: UILabel = {
         let label = UILabel()
         label.textColor = .gray
-        label.text = "Ночь"
-        label.font = UIFont(name: "AppleSDGothicNeo-SemiBold", size: 18)
+        label.text = EnumString.night.rawValue
+        label.font = UIFont(name: EnumString.fontOne.rawValue, size: EnumInt.eighteen)
         return label
     }()
     
     private let labelDay: UILabel = {
         let label = UILabel()
         label.textColor = .black
-        label.text = "День"
-        label.font = UIFont(name: "AppleSDGothicNeo-SemiBold", size: 18)
+        label.text = EnumString.day.rawValue
+        label.font = UIFont(name: EnumString.fontOne.rawValue, size: EnumInt.eighteen)
         return label
     }()
     
@@ -101,7 +103,7 @@ final class WeatherVC: UIViewController {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.isUserInteractionEnabled = true
-        tableView.register(TableViewCell.self, forCellReuseIdentifier: "TableCell")
+        tableView.register(TableViewCell.self, forCellReuseIdentifier: TableViewCell.identifier)
         return tableView
     }()
     
@@ -112,13 +114,13 @@ final class WeatherVC: UIViewController {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.isUserInteractionEnabled = true
-        tableView.register(SearchTableViewCell.self, forCellReuseIdentifier: "SearchTableCell")
+        tableView.register(SearchTableViewCell.self, forCellReuseIdentifier: SearchTableViewCell.identifier)
         return tableView
     }()
-
-    // MARK: - Properties
     
-    private let presenter: WeatherPresentationProtocol
+    // MARK: - Internal Properties
+    
+    let presenter: WeatherPresentationProtocol
     
     // MARK: - Init
     
@@ -132,59 +134,36 @@ final class WeatherVC: UIViewController {
     }
     
     // MARK: - View Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-    
-        locationManager.requestWhenInUseAuthorization()
-        locationManager.startUpdatingLocation()
-        locationManager.delegate = self
-
         addSubviews()
         makeConstraints()
-        
+        setupActions()
+        setupSettings()
+        presenter.getLocate()
+    }
+    
+    // MARK: - Setup actions
+    
+    private func setupActions() {
         let gest = UITapGestureRecognizer(target: self, action: #selector(updateGest))
         weatherDescriptionView.addGestureRecognizer(gest)
-        
+    }
+    
+    // MARK: - Setup settings
+    
+    private func setupSettings() {
         navigationItem.titleView = searchBar
-        
         weatherDescriptionView.collectionView.dataSource = self
-    }
- 
-}
-
-// MARK: - Location
-
-extension WeatherVC: CLLocationManagerDelegate {
-    
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.last else { return }
-        let parameter = "\(location.coordinate.latitude),\(location.coordinate.longitude)"
-        if callCounter == 0 {
-            callCounter += 1
-            presenter.getData(parameter: parameter)
-        }
-    }
-
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Location manager failed with error: \(error.localizedDescription)")
-    }
-}
-
-// MARK: - Action
-private extension WeatherVC {
-    
-    @objc func updateGest() {
-        searchBar.resignFirstResponder()
-        tableViewForSearchBar.isHidden = true
-        searchBar.text = nil
     }
 }
 
 // MARK: - Layout
 
-extension WeatherVC {
+private extension MainScreenViewContriller {
     
-    private func addSubviews() {
+     func addSubviews() {
         view.backgroundColor = .white
         view.addSubview(viewMainShadowTest)
         view.addSubview(viewMain)
@@ -197,15 +176,15 @@ extension WeatherVC {
         viewMain.addSubview(tableViewForSearchBar)
     }
     
-    private func makeConstraints() {
+     func makeConstraints() {
         viewMain.snp.makeConstraints { make in
-            make.top.horizontalEdges.equalToSuperview() // leading, trailing
-            make.height.equalTo(view.frame.height/2 + 70)
+            make.top.horizontalEdges.equalToSuperview()
+            make.height.equalTo(view.frame.height * 0.5 + EnumInt.seventy)
         }
         
         viewMainShadowTest.snp.makeConstraints { make in
             make.top.equalTo(viewMain.snp.top)
-            make.height.equalTo(viewMain.snp.height)
+            make.height.equalTo(viewMain.snp.height).inset(EnumInt.three)
             make.horizontalEdges.equalToSuperview()
         }
         
@@ -215,39 +194,77 @@ extension WeatherVC {
         }
 
         labelWeatherDays.snp.makeConstraints { make in
-            make.top.equalTo(viewMain.snp.bottom).offset(30)
-            make.leading.equalToSuperview().offset(15)
+            make.top.equalTo(viewMain.snp.bottom).offset(EnumInt.thirty)
+            make.leading.equalToSuperview().offset(EnumInt.fifteen)
         }
 
         labelNight.snp.makeConstraints { make in
-            make.top.equalTo(viewMain.snp.bottom).offset(40)
-            make.trailing.equalToSuperview().offset(-20)
+            make.top.equalTo(viewMain.snp.bottom).offset(EnumInt.fourty)
+            make.trailing.equalToSuperview().inset(view.frame.width * 0.06)
         }
 
         labelDay.snp.makeConstraints { make in
-            make.top.equalTo(viewMain.snp.bottom).offset(40)
-            make.trailing.equalTo(labelNight.snp.leading).offset(-25)
+            make.top.equalTo(viewMain.snp.bottom).offset(EnumInt.fourty)
+            make.trailing.equalToSuperview().inset(view.frame.width * 0.2)
         }
         
         tableViewDays.snp.makeConstraints { make in
-            make.top.equalTo(labelWeatherDays.snp.bottom).offset(5)
+            make.top.equalTo(labelWeatherDays.snp.bottom).offset(EnumInt.five)
             make.bottom.horizontalEdges.equalToSuperview()
         }
         
         tableViewForSearchBar.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(-9)
-            make.leading.equalTo(viewMain.snp.leading).offset(22)
-            make.trailing.equalTo(viewMain.snp.trailing).offset(-22)
-            make.height.equalTo(85)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(-EnumInt.nine)
+            make.leading.equalToSuperview().inset(view.frame.width * 0.21)
+            make.trailing.equalToSuperview().inset(EnumInt.twentyTwo)
+            make.height.equalTo(EnumInt.ninety)
             
         }
-        
+    }
+    
+    // MARK: - Actions
+    
+    @objc func updateGest() {
+        searchBar.resignFirstResponder()
+        tableViewForSearchBar.isHidden = true
+        searchBar.text = nil
+    }
+    
+    // MARK: - Search logic
+    
+    func getNewValue(text: [String]) {
+        DispatchQueue.main.async {
+            for item in self.listOfFoundCities {
+                let text = self.textForSearchBar.lowercased()
+                if item.lowercased().contains(text) {
+                    self.tableViewForSearchBar.isHidden = false
+                    self.arrayOneCity.append(item)
+                }
+            }
+            self.tableViewForSearchBar.reloadData()
+        }
     }
 }
 
 // MARK: - WeatherViewProtocol
 
-extension WeatherVC: WeatherViewProtocol {
+extension MainScreenViewContriller: MainScreenViewProtocol {
+    
+    func newError(text: String) {
+        switch text {
+        case "404":
+            let alert = UIAlertController(title: "Ошибка подключения к серверу!", message: "Попробуйте позже.", preferredStyle: .alert)
+            let action = UIAlertAction(title: "ОК", style: .default)
+            alert.addAction(action)
+            present(alert, animated: true)
+        case "ErrorDecode":
+            let alert = UIAlertController(title: "Ошибка обработки данных!", message: "Попробуйте позже. Если ошибка повторится, обратитесь в поддержку.", preferredStyle: .alert)
+            let action = UIAlertAction(title: "ОК", style: .default)
+            alert.addAction(action)
+            present(alert, animated: true)
+        default: break
+        }
+    }
     
     func setWeatherDescriptionView(with model: WeatherDescription) {
         weatherDescriptionView.configure(with: model)
@@ -265,14 +282,14 @@ extension WeatherVC: WeatherViewProtocol {
         viewMain.image = with
     }
     
-    func sentCitys(with: [String]) {
-        arrayCitys = with
+    func sendListOfFoundCities(with: [String]) {
+        listOfFoundCities = with
     }
 }
 
 // MARK: - UISearchBarDelegate
 
-extension WeatherVC: UISearchBarDelegate {
+extension MainScreenViewContriller: UISearchBarDelegate {
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         if let searchText = searchBar.text {
@@ -294,30 +311,16 @@ extension WeatherVC: UISearchBarDelegate {
             tableViewForSearchBar.isHidden = true
         }
         
-        if arrayCitys.isEmpty {
+        if listOfFoundCities.isEmpty {
             tableViewForSearchBar.isHidden = true
         }
-//        print("arrayCityVC \(arrayCitys)")
         tableViewForSearchBar.reloadData()
-    }
-
-    func getNewValue(text: [String]) {
-        DispatchQueue.main.async {
-            for item in self.arrayCitys {
-                let text = self.textForSearchBar.lowercased()
-                if item.lowercased().contains(text) {
-                    self.tableViewForSearchBar.isHidden = false
-                    self.arrayOneCity.append(item)
-                }
-            }
-            self.tableViewForSearchBar.reloadData()
-        }
     }
 }
 
-// MARK: - Collection DataSource
+// MARK: - CollectionView DataSource
 
-extension WeatherVC: UICollectionViewDataSource {
+extension MainScreenViewContriller: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return presenter.forecastHourly.count
@@ -326,24 +329,16 @@ extension WeatherVC: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         // swiftlint:disable force_cast
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CollectionViewCell.identifier, for: indexPath) as! CollectionViewCell
-        // swiftlint:enable force_cast 
-        cell.delegate = self
+        // swiftlint:enable force_cast
         cell.configure(with: presenter.forecastHourly[indexPath.item])
-        
         return cell
     }
 }
 
-// MARK: - Collection Cell Delegate
+// MARK: - TableView Delegate & DataSource
 
-extension WeatherVC: CollectionViewCellDelegate {
-    
-}
+extension MainScreenViewContriller: UITableViewDataSource, UITableViewDelegate {
 
-// MARK: - TableView Delegate & DS
-
-extension WeatherVC: UITableViewDataSource, UITableViewDelegate {
-    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if tableView == tableViewDays {
             return presenter.forecastDaily.count
@@ -353,23 +348,22 @@ extension WeatherVC: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
         if tableView == tableViewDays {
-            let cell = TableViewCell(style: .default, reuseIdentifier: "TableCell")
+            let cell = TableViewCell(style: .default, reuseIdentifier: TableViewCell.identifier)
             cell.configure(with: presenter.forecastDaily[indexPath.row])
             return cell
         } else {
-            let cell = SearchTableViewCell(style: .default, reuseIdentifier: "SearchTableCell")
+            let cell = SearchTableViewCell(style: .default, reuseIdentifier: SearchTableViewCell.identifier)
             cell.regionLabel.text = arrayOneCity[indexPath.row]
             return cell
         }
     }
-    
+
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if tableView == tableViewDays {
-            return 55
+            return EnumInt.fifty
         } else {
-            return 30
+            return tableView.frame.height / EnumInt.four
         }
     }
     

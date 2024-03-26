@@ -44,8 +44,6 @@ struct Condition: Codable {
 
 enum Text: String, Codable {
     case clear = "Clear "
-    // case textClear = "Clear "
-    // case clear = "Clear"
     case cloudy = "Cloudy "
     case lightDrizzle = "Light drizzle"
     case lightFreezingRain = "Light freezing rain"

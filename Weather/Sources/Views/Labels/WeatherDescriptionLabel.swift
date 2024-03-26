@@ -10,7 +10,7 @@ import UIKit
 final class WeatherDescriptionLabel: UILabel {
     convenience init(size: CGFloat) {
         self.init(frame: .zero)
-        font = UIFont(name: "AppleSDGothicNeo-SemiBold", size: size)
+        font = UIFont(name: EnumString.fontOne.rawValue, size: size)
         textColor = .white
     }
 }

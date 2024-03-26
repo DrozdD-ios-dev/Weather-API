@@ -19,8 +19,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     
     func openVC() {
-        let vc = WeatherAssembly.configure()
-        let navVC = UINavigationController(rootViewController: vc)
+        let viewC = FirstScreenAssembly.configure()
+        let navVC = UINavigationController(rootViewController: viewC)
         window?.rootViewController = navVC
         window?.makeKeyAndVisible()
         window?.overrideUserInterfaceStyle = .light

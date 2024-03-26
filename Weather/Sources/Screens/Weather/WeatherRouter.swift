@@ -5,7 +5,9 @@
 //  Created by Дрозд Денис on 25.02.2024.
 //
 
-import UIKit
+import Foundation
+
+// MARK: - Protocol
 
 protocol WeatherRouterProtocol: AnyObject {
     var presenter: WeatherPresentationProtocol? { get }

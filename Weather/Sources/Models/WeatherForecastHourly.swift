@@ -10,5 +10,11 @@ import Foundation
 struct WeatherForecastHourly {
     let date: String
     let imageURL: URL
-    let temperature: String
+    let temperature: Double
+}
+
+extension WeatherForecastHourly {
+    var temperatureN: String {
+        return String(format: "%.0f", temperature) + "°C"
+    }
 }

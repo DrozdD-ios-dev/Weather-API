@@ -7,24 +7,26 @@
 
 import UIKit
 
+// MARK: - Protocol
+
 protocol WeatherPresentationProtocol: AnyObject {
     var forecastHourly: [WeatherForecastHourly] { get }
     var forecastDaily: [WeatherForecastDaily] { get }
-    
     func downloadData(weather: Weather)
     
     func getData(parameter: String)
     func getDataOneCity(with: String)
     func searchCity(with: String)
     func sentCitys(with: [String])
+    func passError(code: String)
+    func getLocate()
 }
-
 
 final class WeatherPresenter: WeatherPresentationProtocol {
     
     // MARK: - Properties
     
-    weak var viewController: WeatherViewProtocol?
+    weak var viewController: MainScreenViewProtocol?
     let router: WeatherRouterProtocol
     let interactor: WeatherInteractorProtocol
     
@@ -43,6 +45,12 @@ final class WeatherPresenter: WeatherPresentationProtocol {
     
     // MARK: - Public Functions
     
+    func passError(code: String) {
+        DispatchQueue.main.async {
+            self.viewController?.newError(text: code)
+        }
+    }
+    
     func getData(parameter: String) {
         interactor.getData(parameter: parameter)
     }
@@ -55,39 +63,49 @@ final class WeatherPresenter: WeatherPresentationProtocol {
         interactor.getData(parameter: with)
     }
     
+    // MARK: - Locate
+    
+    func getLocate() {
+        let locateManager = LocateManager.shared.getLocation()
+        getData(parameter: locateManager)
+    }
+    
     // MARK: - Interactor Calls
     
     func downloadData(weather: Weather) {
-        
+        setMainData(model: weather)
+        setWeatherDescriptin(model: weather)
+        setTabelViewData(model: weather)
+        selectMainImage(model: weather)
+    }
+    
+    func setMainData(model: Weather) {
         forecastHourly = []
         forecastDaily = []
         
-        // Отображаем данные на WeatherDescriptionView
-        
-        let windSpeed = (weather.current.windKph * 0.27778 * 10).rounded() / 10
-        
-        let model = WeatherDescription(
-            region: "\(weather.location.name), \(weather.location.country)",
-            temperature: String("\(weather.current.tempC)°C"),
-            imageURL: weather.current.condition.icon.toURLWithHTTPS(),
-            currentWeather: NSLocalizedString("\(weather.current.condition.text)", comment: ""),
-            feelsAs: "Ощущается как: \(weather.current.feelslikeC)°C",
-            windSpeed: "Скорость ветра \(String(windSpeed)) м/с",
-            humidity: "Влажность воздуха \(weather.current.humidity)%",
-            pressure: "Атм. давление: \(weather.current.pressureMB) mm"
+        let windSpeed = (model.current.windKph * 0.27778 * 10).rounded() / 10
+        let modelWeather = WeatherDescription(
+            region: "\(model.location.name), \(model.location.country)",
+            temperature: model.current.tempC,
+            imageURL: model.current.condition.icon.toURLWithHTTPS(),
+            currentWeather: model.current.condition.text,
+            feelsAs: model.current.feelslikeC,
+            windSpeed: windSpeed,
+            humidity: model.current.humidity,
+            pressure: model.current.pressureMB
         )
         
         DispatchQueue.main.async {
-            self.viewController?.setWeatherDescriptionView(with: model)
+            self.viewController?.setWeatherDescriptionView(with: modelWeather)
         }
-        
-        // Отображаем данные на коллекции
-        
-        for hour in weather.forecast.forecastday[0].hour[0..<24] {
+    }
+    
+    func setWeatherDescriptin(model: Weather) {
+        for hour in model.forecast.forecastday[0].hour[0..<24] {
             let model = WeatherForecastHourly(
                 date: hour.time.removeFirstCharacters(11),
                 imageURL: hour.condition.icon.toURLWithHTTPS(),
-                temperature: String(hour.tempC) + "°C"
+                temperature: hour.tempC
             )
             forecastHourly.append(model)
         }
@@ -95,15 +113,15 @@ final class WeatherPresenter: WeatherPresentationProtocol {
         DispatchQueue.main.async {
             self.viewController?.reloadCollectionViewData()
         }
-        
-        // Отображаем данные в талице
-        
-        for forecast in weather.forecast.forecastday {
+    }
+    
+    func setTabelViewData(model: Weather) {
+        for forecast in model.forecast.forecastday {
             let model = WeatherForecastDaily(
-                date: convertDateToCustomFormat(forecast.date),
+                date: Formatter.convertDateToCustomFormat(forecast.date),
                 imageURL: forecast.day.condition.icon.toURLWithHTTPS(),
-                dayTemperature: String(format: "%.1f", forecast.day.avgtempC),
-                nightTemperature: String(format: "%.1f", forecast.day.avgtempC - 2.5)
+                dayTemperature: forecast.day.avgtempC,
+                nightTemperature: forecast.day.avgtempC
             )
             forecastDaily.append(model)
         }
@@ -111,95 +129,21 @@ final class WeatherPresenter: WeatherPresentationProtocol {
         DispatchQueue.main.async {
             self.viewController?.reloadTableViewData()
         }
-        
-        // Выбор отображения фоновой картинки
+    }
+    
+    func selectMainImage(model: Weather) {
         DispatchQueue.main.async {
-            if weather.current.isDay == 1 {
-                self.selectImageDay(with: weather) // Day
+            var mainImage = UIImageView()
+            if model.current.isDay == 1 {
+            mainImage = MainImageManager.selectImageDay(model: model)
             } else {
-                self.selectImageNight(with: weather) // Night
+            mainImage = MainImageManager.selectImageNight(model: model)
             }
+            self.viewController?.reloadViewMain(with: mainImage.image ?? UIImage())
         }
     }
     
     func sentCitys(with: [String]) {
-        viewController?.sentCitys(with: with)
-//        print("Presenter print (with) \(with)")
+        viewController?.sendListOfFoundCities(with: with)
     }
-    
-    // MARK: - Private Functions
-    
-    private func convertDateToCustomFormat(_ inputDate: String) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        
-        if let date = dateFormatter.date(from: inputDate) {
-            let outputFormatter = DateFormatter()
-            outputFormatter.dateFormat = "d MMMM"
-            return outputFormatter.string(from: date)
-        }
-        
-        return ""
-    }
-    
-    private func selectImageDay(with: Weather) {
-        let image = UIImageView()
-        switch with.current.condition.text {
-            
-        case "Sunny", "Partly Cloudy ":
-            image.image = UIImage(named: "SunnyDay")
-            
-        case "Clear ":
-            image.image = UIImage(named: "ClearDay")
-            
-        case "Cloudy ", "Overcast ", "Partly cloudy":
-            image.image = UIImage(named: "CloudDay")
-            
-        case "Light drizzle", "Light freezing rain", "Light sleet", "Light rain", "Light rain shower":
-            image.image = UIImage(named: "LightRain")
-            
-        case "Moderate rain", "Patchy rain nearby":
-            image.image = UIImage(named: "Rain")
-            
-        case "Light snow showers", "Moderate snow", "Light snow", "Moderate or heavy snow showers":
-            image.image = UIImage(named: "SnowDay")
-            
-        case "Mist", "Fog", "Freezing fog":
-            image.image = UIImage(named: "MistDay")
-            
-        default: break
-        }
-        self.viewController?.reloadViewMain(with: image.image ?? UIImage())
-    }
-    
-    private func selectImageNight(with: Weather) {
-        let image = UIImageView()
-        switch with.current.condition.text {
-            
-        case "Sunny", "Partly Cloudy ":
-            image.image = UIImage(named: "SunnyDay")
-            
-        case "Clear ":
-            image.image = UIImage(named: "ClearNight")
-            
-        case "Cloudy ", "Overcast ", "Partly cloudy":
-            image.image = UIImage(named: "CloudNight")
-            
-        case "Light drizzle", "Light freezing rain", "Light sleet", "Light rain", "Light rain shower":
-            image.image = UIImage(named: "LightRain")
-            
-        case "Moderate rain", "Patchy rain nearby":
-            image.image = UIImage(named: "Rain")
-            
-        case "Light snow showers", "Moderate snow", "Light snow", "Moderate or heavy snow showers":
-            image.image = UIImage(named: "SnowNight")
-            
-        case "Mist", "Fog", "Freezing fog":
-            image.image = UIImage(named: "MistNight")
-            
-        default: break
-        }
-        self.viewController?.reloadViewMain(with: image.image ?? UIImage())
-    }
-    
 }

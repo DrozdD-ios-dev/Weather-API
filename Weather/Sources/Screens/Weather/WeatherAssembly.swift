@@ -8,28 +8,8 @@
 import UIKit
 
 final class WeatherAssembly {
-//    func configurate(_ vc: VcOneDisplayLogic) {  // две реализации - смысл один 
-//        let presenter = VcOnePresenter()
-//        let router = VcOneRouter()
-//        let interactor = VcOneInteractor()
-//        vc.presenter = presenter
-//        presenter.viewController = vc
-//        presenter.router = router
-//        router.presenter = presenter
-//        presenter.interactor = interactor
-//        interactor.presenter = presenter
-//    }
     
-//    static func configurate(regRef: VcOneViewController) {
-//        let presenter: VcOnePresentationProtocol = VcOnePresenter()
-//        regRef.presenter = presenter
-//        regRef.presenter?.router = VcOneRouter()
-//        regRef.presenter?.viewController = regRef
-//        regRef.presenter?.interactor = VcOneInteractor()
-//        regRef.presenter?.interactor?.presenter = presenter
-//    }
-    
-    static func configure() -> WeatherVC {
+    static func configure() -> MainScreenViewContriller {
         let interactor = WeatherInteractor()
         let router = WeatherRouter()
         
@@ -37,7 +17,7 @@ final class WeatherAssembly {
         interactor.presenter = presenter
         router.presenter = presenter
         
-        let viewController = WeatherVC(presenter: presenter)
+        let viewController = MainScreenViewContriller(presenter: presenter)
         presenter.viewController = viewController
         
         return viewController

@@ -7,11 +7,14 @@
 
 import UIKit
 
+// MARK: - Protocol
+
 protocol WeatherInteractorProtocol: AnyObject {
     func fetchData(parameter: String, completion: @escaping (Result<Weather, NetworkError>) -> Void)
     func getData(parameter: String)
     func searchCity(with: String)
 }
+// MARK: - Enum NetworkError
 
 enum NetworkError: Error {
     case requestFailed
@@ -20,8 +23,12 @@ enum NetworkError: Error {
 
 final class WeatherInteractor: WeatherInteractorProtocol {
     
+    // MARK: - Properties
+    
     weak var presenter: WeatherPresentationProtocol?
-
+    
+    // MARK: - Public functions
+    
     func getData(parameter: String) {
         fetchData(parameter: parameter) { [weak self] result in
             guard let self else { return }
@@ -30,12 +37,13 @@ final class WeatherInteractor: WeatherInteractorProtocol {
                 presenter?.downloadData(weather: weather)
                 
             case .failure(let error):
+                presenter?.passError(code: "404")
                 print("Failure! Error: \(error)")
             }
         }
     }
-
-    //new API
+    
+    // Метод отправляющий запрос по конкретному городу
     func fetchData(parameter: String, completion: @escaping (Result<Weather, NetworkError>) -> Void) {
         guard let url = URL(string: "https://api.weatherapi.com/v1/forecast.json?key=2b2a831937964f21bf464404241603&q=\(parameter)&days=7&aqi=no&alerts=no") else { return }
         
@@ -55,22 +63,18 @@ final class WeatherInteractor: WeatherInteractorProtocol {
                 return
             }
             
-//            let checkDataUtf8 = String(data: data, encoding: .utf8) // проверка кодировки
-//            print("checkDataUtf8 \(checkDataUtf8!)")
-            
             do {
                 let weather = try JSONDecoder().decode(Weather.self, from: data)
                 completion(.success(weather))
-//                 print(weather)
             } catch {
+                self.presenter?.passError(code: "ErrorDecode")
                 print("Ошибка декодирования: \(error)")
             }
         }
-        
         task.resume()
     }
     
-    //new API
+    // Метод отправляющий запрос по одной букве
     func searchCity(with: String) {
         guard let url = URL(string: "https://api.weatherapi.com/v1/search.json?key=2b2a831937964f21bf464404241603&q=\(with)") else { return }
         
@@ -89,9 +93,8 @@ final class WeatherInteractor: WeatherInteractorProtocol {
                 let city = try JSONDecoder().decode([SearchCity].self, from: data)
                 self.presenter?.sentCitys(with: (city.map { $0.name }))
             } catch {
-                print("Ошибка декодирования: \(error)")
+                print("Ошибка декодирrования: \(error)")
             }
-            
         }
         task.resume()
     }

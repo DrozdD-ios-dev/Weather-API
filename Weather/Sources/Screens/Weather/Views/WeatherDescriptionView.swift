@@ -13,18 +13,26 @@ final class WeatherDescriptionView: UIView {
     // MARK: - Views
     
     private let regionLabel: UILabel = {
-        let label = WeatherDescriptionLabel(size: 38)
+        let label = WeatherDescriptionLabel(size: EnumInt.fourty)
         label.numberOfLines = 2
         label.textAlignment = .center
         return label
     }()
-    private let temperatureLabel = WeatherDescriptionLabel(size: 40)
+    
+    private let temperatureLabel = WeatherDescriptionLabel(size: EnumInt.fourty)
     private let weatherImageView = UIImageView()
-    private let currentWeatherLabel = WeatherDescriptionLabel(size: 24)
-    private let feelsAsLabel = WeatherDescriptionLabel(size: 20)
-    private let windSpeedLabel = WeatherDescriptionLabel(size: 17)
-    private let humidityLabel = WeatherDescriptionLabel(size: 17)
-    private let pressureLabel = WeatherDescriptionLabel(size: 17)
+    private let currentWeatherLabel = WeatherDescriptionLabel(size: EnumInt.twentyFive)
+    private let feelsAsLabel = WeatherDescriptionLabel(size: EnumInt.twenty)
+    private let windSpeedLabel = WeatherDescriptionLabel(size: EnumInt.seventeen)
+    private let humidityLabel = WeatherDescriptionLabel(size: EnumInt.seventeen)
+    private let pressureLabel = WeatherDescriptionLabel(size: EnumInt.seventeen)
+    
+    private let parametersStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = EnumInt.fifteen
+        return stack
+    }()
     
     lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -54,78 +62,73 @@ final class WeatherDescriptionView: UIView {
     func configure(with model: WeatherDescription) {
         Task { NukeExtensions.loadImage(with: model.imageURL, into: weatherImageView) }
         regionLabel.text = model.region
-        temperatureLabel.text = model.temperature
-        currentWeatherLabel.text = model.currentWeather
-        feelsAsLabel.text = model.feelsAs
-        windSpeedLabel.text = model.windSpeed
-        humidityLabel.text = model.humidity
-        pressureLabel.text = model.pressure
+        temperatureLabel.text = model.temperatureN
+        currentWeatherLabel.text = model.currentWeatherN
+        feelsAsLabel.text = model.feelsAsN
+        windSpeedLabel.text = model.windSpeedN
+        humidityLabel.text = model.humidityN
+        pressureLabel.text = model.pressureN
     }
 }
 
 // MARK: - Layout
 
-extension WeatherDescriptionView {
+private extension WeatherDescriptionView {
     
-    private func addSubviews() {
+    func addSubviews() {
         addSubview(regionLabel)
         addSubview(temperatureLabel)
         addSubview(weatherImageView)
         addSubview(currentWeatherLabel)
         addSubview(feelsAsLabel)
-        addSubview(windSpeedLabel)
-        addSubview(humidityLabel)
-        addSubview(pressureLabel)
+        addSubview(parametersStack)
+        parametersStack.addArrangedSubview(windSpeedLabel)
+        parametersStack.addArrangedSubview(humidityLabel)
+        parametersStack.addArrangedSubview(pressureLabel)
         addSubview(collectionView)
     }
     
-    private func makeConstraints() {
+    func makeConstraints() {
         regionLabel.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview().inset(32)
-            make.top.equalToSuperview().inset(20)
+            make.horizontalEdges.equalToSuperview().inset(EnumInt.twenty)
+            make.top.equalTo(safeAreaLayoutGuide.snp.top)
         }
         
         temperatureLabel.snp.makeConstraints { make in
-            make.top.equalTo(regionLabel.snp.bottom).offset(20)
-            make.centerX.equalToSuperview().offset(-41) //
+            make.top.lessThanOrEqualTo(regionLabel.snp.bottom).offset(EnumInt.fifteen)
+            make.centerX.equalToSuperview().offset(-EnumInt.fourty)
         }
         
         weatherImageView.snp.makeConstraints { make in
-            make.top.equalTo(regionLabel.snp.bottom).offset(-6)
-            make.centerX.equalToSuperview().offset(50) //
-            make.size.equalTo(90) // height, width
+            make.top.equalTo(regionLabel.snp.bottom)
+            make.centerX.equalToSuperview().offset(EnumInt.fifty)
+            make.size.lessThanOrEqualTo(EnumInt.ninety)
         }
         
         currentWeatherLabel.snp.makeConstraints { make in
-            make.bottom.equalTo(feelsAsLabel.snp.top).offset(-15)
+            make.top.equalTo(temperatureLabel.snp.bottom)
             make.centerX.equalToSuperview()
+            make.height.lessThanOrEqualTo(EnumInt.fifty)
         }
         
         feelsAsLabel.snp.makeConstraints { make in
-            make.bottom.equalTo(windSpeedLabel.snp.top).offset(-15)
+            make.top.equalTo(currentWeatherLabel.snp.bottom)
+            make.bottom.equalTo(parametersStack.snp.top)
             make.centerX.equalToSuperview()
+            make.height.lessThanOrEqualTo(EnumInt.fifty)
         }
         
-        windSpeedLabel.snp.makeConstraints { make in
-            make.bottom.equalTo(humidityLabel.snp.top).offset(-15)
-            make.leading.equalToSuperview().offset(15)
-        }
-        
-        humidityLabel.snp.makeConstraints { make in
-            make.bottom.equalTo(pressureLabel.snp.top).offset(-15)
-            make.leading.equalToSuperview().offset(15)
-        }
-        
-        pressureLabel.snp.makeConstraints { make in
-            make.bottom.equalToSuperview().offset(-18)
-            make.leading.equalToSuperview().offset(15)
+        parametersStack.snp.makeConstraints { make in
+            make.bottom.equalToSuperview().offset(-EnumInt.eighteen)
+            make.leading.equalToSuperview().offset(EnumInt.fifteen)
+            make.height.equalTo(collectionView)
         }
         
         collectionView.snp.makeConstraints { make in
-            make.bottom.equalToSuperview().offset(-21)
-            make.trailing.equalToSuperview().offset(-12)
-            make.height.equalTo(90)
-            make.leading.equalTo(humidityLabel.snp.trailing).offset(5)
+            make.bottom.equalToSuperview().offset(-EnumInt.twenty)
+            make.trailing.equalToSuperview().offset(-EnumInt.twelve)
+            make.height.equalTo(EnumInt.ninety)
+            make.leading.equalTo(parametersStack.snp.trailing).offset(EnumInt.nine)
         }
     }
 }
