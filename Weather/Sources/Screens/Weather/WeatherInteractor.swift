@@ -74,7 +74,7 @@ final class WeatherInteractor: WeatherInteractorProtocol {
         task.resume()
     }
     
-    // Метод отправляющий запрос по одной букве
+    // Метод отправляющий запрос по одной букве для поиска города
     func searchCity(with: String) {
         guard let url = URL(string: "https://api.weatherapi.com/v1/search.json?key=2b2a831937964f21bf464404241603&q=\(with)") else { return }
         
