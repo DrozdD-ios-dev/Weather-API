@@ -27,7 +27,7 @@ UIKit, NukeExtensions, SnapKit, CoreLocation, SwiftLint.
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------
 <div style="display: flex;">
-    <img src="https://github.com/DrozdD-ios-dev/Aviator/blob/main/Aviator/Resources/AssetsForREADME/1.png" width="200" style="margin-right: 10px;">
+    <img src="https://github.com/DrozdD-ios-dev/Weather-API/blob/master/Weather/Resousces/AssetsForREADME%20/1.png" width="200" style="margin-right: 10px;">
     <img src="https://github.com/DrozdD-ios-dev/Aviator/blob/main/Aviator/Resources/AssetsForREADME/2.png" width="200" style="margin-right: 10px;">
     <img src="https://github.com/DrozdD-ios-dev/Aviator/blob/main/Aviator/Resources/AssetsForREADME/3.png" width="200" style="margin-right: 10px;">
     <img src="https://github.com/DrozdD-ios-dev/Aviator/blob/main/Aviator/Resources/AssetsForREADME/4.png" width="200" style="margin-right: 10px;">
