@@ -28,11 +28,11 @@ UIKit, NukeExtensions, SnapKit, CoreLocation, SwiftLint.
 ------------------------------------------------------------------------------------------------------------------------------------------------------
 <div style="display: flex;">
     <img src="https://github.com/DrozdD-ios-dev/Weather-API/blob/main/Weather/Resousces/AssetsForREADME%20/1.png" width="200" style="margin-right: 10px;">
-    <img src="https://github.com/DrozdD-ios-dev/Aviator/blob/main/Aviator/Resources/AssetsForREADME/2.png" width="200" style="margin-right: 10px;">
-    <img src="https://github.com/DrozdD-ios-dev/Aviator/blob/main/Aviator/Resources/AssetsForREADME/3.png" width="200" style="margin-right: 10px;">
-    <img src="https://github.com/DrozdD-ios-dev/Aviator/blob/main/Aviator/Resources/AssetsForREADME/4.png" width="200" style="margin-right: 10px;">
-    <img src="https://github.com/DrozdD-ios-dev/Aviator/blob/main/Aviator/Resources/AssetsForREADME/5.png" width="200" style="margin-right: 10px;">
-    <img src="https://github.com/DrozdD-ios-dev/Aviator/blob/main/Aviator/Resources/AssetsForREADME/6.png" width="200" style="margin-right: 10px;">
-    <img src="https://github.com/DrozdD-ios-dev/Aviator/blob/main/Aviator/Resources/AssetsForREADME/7.png" width="200" style="margin-right: 10px;">
-    <img src="https://github.com/DrozdD-ios-dev/Aviator/blob/main/Aviator/Resources/AssetsForREADME/8.png" width="200">
+    <img src="https://github.com/DrozdD-ios-dev/Weather-API/blob/main/Weather/Resousces/AssetsForREADME%20/2.png" width="200" style="margin-right: 10px;">
+    <img src="https://github.com/DrozdD-ios-dev/Weather-API/blob/main/Weather/Resousces/AssetsForREADME%20/3.png" width="200" style="margin-right: 10px;">
+    <img src="https://github.com/DrozdD-ios-dev/Weather-API/blob/main/Weather/Resousces/AssetsForREADME%20/4.png" width="200" style="margin-right: 10px;">
+    <img src="https://github.com/DrozdD-ios-dev/Weather-API/blob/main/Weather/Resousces/AssetsForREADME%20/5.png" width="200" style="margin-right: 10px;">
+    <img src="https://github.com/DrozdD-ios-dev/Weather-API/blob/main/Weather/Resousces/AssetsForREADME%20/6.png" width="200" style="margin-right: 10px;">
+    <img src="https://github.com/DrozdD-ios-dev/Weather-API/blob/main/Weather/Resousces/AssetsForREADME%20/7.png" width="200" style="margin-right: 10px;">
+    <img src="https://github.com/DrozdD-ios-dev/Weather-API/blob/main/Weather/Resousces/AssetsForREADME%20/8.png" width="200">
 </div>
